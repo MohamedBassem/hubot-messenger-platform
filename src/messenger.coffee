@@ -33,6 +33,8 @@ class Messenger extends Adapter
     return @robot.logger.error "No messenger verification token was provided" unless @options.verificationToken
     return @robot.logger.error "No messenger page access token was provided" unless @options.pageAccessToken
 
+    @emit 'connected'
+
     @robot.router.get '/webhook', (req, res) =>
       @robot.logger.debug "Received a validation request"
       if req.query['hub.verify_token'] == @options.verificationToken
@@ -54,7 +56,7 @@ class Messenger extends Adapter
         i++
       res.send 'OK'
 
-    @emit "Ready to receive messages .."
+    @robot.logger.info "Ready to receive messages .."
 
 exports.use = (robot) ->
   new Messenger robot
