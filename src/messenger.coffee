@@ -4,11 +4,10 @@ FB_MESSAGING_ENDPOINT = "https://graph.facebook.com/v2.6/me/messages"
 
 class Messenger extends Adapter
 
-  constructor: (robot) ->
-    @robot = robot
+  constructor: (@robot) ->
+    super @robot
 
   send: (envelope, messages...) ->
-    robot = @robot
     for msg in messages
       data = JSON.stringify({
         recipient : {
@@ -20,9 +19,9 @@ class Messenger extends Adapter
       })
       @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
         .header('Content-Type', 'application/json')
-        .post(data) (err, res, body) ->
+        .post(data) (err, res, body) =>
           if err
-            robot.logger.error "Failed to send response : " + err
+            @robot.logger.error "Failed to send response : " + err
 
   reply: @prototype.send
 
@@ -34,16 +33,14 @@ class Messenger extends Adapter
     return @robot.logger.error "No messenger verification token was provided" unless @options.verificationToken
     return @robot.logger.error "No messenger page access token was provided" unless @options.pageAccessToken
 
-    options = @options
-    robot = @robot
-    @robot.router.get '/webhook', (req, res) ->
-      robot.logger.debug "Received a validation request"
-      if req.query['hub.verify_token'] == options.verificationToken
+    @robot.router.get '/webhook', (req, res) =>
+      @robot.logger.debug "Received a validation request"
+      if req.query['hub.verify_token'] == @options.verificationToken
         res.send req.query['hub.challenge']
       else
         res.send "Error, wrong validation token"
 
-    @robot.router.post '/webhook', (req,res) ->
+    @robot.router.post '/webhook', (req,res) =>
       messaging_events = req.body.entry[0].messaging
       i = 0
       while i < messaging_events.length
@@ -51,9 +48,9 @@ class Messenger extends Adapter
         senderId = event.sender.id
         if event.message and event.message.text
           text = event.message.text
-          user = new User senderId
-          robot.logger.debug "Received message: '#{text}' from '#{senderId}'"
-          robot.receive new TextMessage user, text
+          user = new User senderId, room: senderId
+          @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
+          @robot.receive new TextMessage(user, text)
         i++
       res.send 'OK'
 
