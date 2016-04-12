@@ -17,8 +17,8 @@ Facebook has just announced it's new [platform for messenger](https://developers
 
 1. Create the facebook page if you don't have one.
 2. Create the facebook app if you don't have one.
-3. Generate a random verification token of any length and save it with you.
-4. From the facebook app's setting, go the messenger tab. In the token generation part, choose your page and note the page access token.
+3. Generate a random verification token of any length and note it with you.
+4. From the facebook app's setting, go to the new messenger tab. In the token generation part, choose your page and note the page access token.
 5. Start your bot with `HUBOT_MESSENGER_VERIFICATION_TOKEN=<verification_code> HUBOT_MESSENGER_PAGE_ACCESS_TOKEN=<page_access_code> ./bin/hubot -a messenger-platform`.
 6. In the messenger's tab webhook section, add a new webhook. The endpoint should be `https://<your_domain>/webhook`. Choose all the events and verify.
 7. Execute `curl -ik -X POST "https://graph.facebook.com/v2.6/me/subscribed_apps?access_token=<page_access_token>"` to subscribe your app to get updates from this page.
