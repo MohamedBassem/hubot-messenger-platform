@@ -34,14 +34,14 @@ class Messenger extends Adapter
     return @robot.logger.error "No messenger verification token was provided" unless @options.verificationToken
     return @robot.logger.error "No messenger page access token was provided" unless @options.pageAccessToken
 
-    robot.router.get '/webhook', (req, res) ->
+    @robot.router.get '/webhook', (req, res) ->
       @robot.logger.debug "Received a validation request"
       if req.query['hub.verify_token'] == @options.verificationToken
         res.send req.query['hub.challenge']
       else
         res.send "Error, wrong validation token"
 
-    robot.router.post '/webhook/', (req,res) ->
+    @robot.router.post '/webhook/', (req,res) ->
       messaging_events = req.body.entry[0].messaging
       i = 0
       while i < messaging_events.length
