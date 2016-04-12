@@ -17,7 +17,7 @@
     "adapter"
   ],
   "author": "Mohamed Bassem",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/MohamedBassem/hubot-messenger-platform/issues"
   },
