@@ -1,0 +1,25 @@
+{
+  "name": "hubot-messenger-platform",
+  "version": "0.0.1",
+  "description": "A hubot adapter for the new messenger platform",
+  "main": "./src/messenger.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MohamedBassem/hubot-messenger-platform.git"
+  },
+  "keywords": [
+    "hubot",
+    "messenger",
+    "bot",
+    "adapter"
+  ],
+  "author": "Mohamed Bassem",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MohamedBassem/hubot-messenger-platform/issues"
+  },
+  "homepage": "https://github.com/MohamedBassem/hubot-messenger-platform#readme"
+}
