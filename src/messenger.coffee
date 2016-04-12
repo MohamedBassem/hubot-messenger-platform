@@ -55,7 +55,7 @@ class Messenger extends Adapter
           robot.logger.debug "Received message: '#{text}' from '#{senderId}'"
           robot.receive new TextMessage user, text
         i++
-      res.sendStatus 200
+      res.send 'OK'
 
     @emit "Ready to receive messages .."
 
