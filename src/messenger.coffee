@@ -4,8 +4,8 @@ FB_MESSAGING_ENDPOINT = "https://graph.facebook.com/v2.6/me/messages"
 
 class Messenger extends Adapter
 
-  constructor: (@robot) ->
-    super @robot
+  constructor: (robot) ->
+    @robot = robot
 
   send: (envelope, messages...) ->
     for msg in messages
