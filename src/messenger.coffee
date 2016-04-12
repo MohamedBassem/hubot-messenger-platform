@@ -1,4 +1,4 @@
-{Adapter,TextMessage} = require 'hubot'
+{Adapter,TextMessage,User} = require 'hubot'
 
 FB_MESSAGING_ENDPOINT = "https://graph.facebook.com/v2.6/me/messages"
 
@@ -8,6 +8,7 @@ class Messenger extends Adapter
     @robot = robot
 
   send: (envelope, messages...) ->
+    robot = @robot
     for msg in messages
       data = JSON.stringify({
         recipient : {
@@ -21,7 +22,7 @@ class Messenger extends Adapter
         .header('Content-Type', 'application/json')
         .post(data) (err, res, body) ->
           if err
-            @robot.logger.error "Failed to send response : " + err
+            robot.logger.error "Failed to send response : " + err
 
   reply: @prototype.send
 
@@ -42,7 +43,7 @@ class Messenger extends Adapter
       else
         res.send "Error, wrong validation token"
 
-    @robot.router.post '/webhook/', (req,res) ->
+    @robot.router.post '/webhook', (req,res) ->
       messaging_events = req.body.entry[0].messaging
       i = 0
       while i < messaging_events.length
