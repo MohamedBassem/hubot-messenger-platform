@@ -22,6 +22,8 @@ class Messenger extends Adapter
         .post(data) (err, res, body) =>
           if err
             @robot.logger.error "Failed to send response : " + err
+          else if res.statusCode != 200
+            @robot.logger.error "Failed to send response : " + body
 
   reply: @prototype.send
 
