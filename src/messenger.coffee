@@ -29,7 +29,7 @@ class Messenger extends Adapter
   run: ->
     @options =
       verificationToken : process.env.HUBOT_MESSENGER_VERIFICATION_TOKEN
-      pageAccessToken : procecss.env.HUBOT_MESSENGER_PAGE_ACCESS_TOKEN
+      pageAccessToken : process.env.HUBOT_MESSENGER_PAGE_ACCESS_TOKEN
 
     return @robot.logger.error "No messenger verification token was provided" unless @options.verificationToken
     return @robot.logger.error "No messenger page access token was provided" unless @options.pageAccessToken
