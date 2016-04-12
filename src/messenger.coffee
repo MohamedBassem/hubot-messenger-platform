@@ -8,7 +8,6 @@ class Messenger extends Adapter
     super @robot
 
   send: (envelope, messages...) ->
-    socket = @sockets[@userToSocket[envelope.user.id]]
     for msg in messages
       data = JSON.stringify({
         recipient : {
