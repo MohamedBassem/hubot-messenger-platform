@@ -34,6 +34,7 @@ For more info, check [facebook's official guide](https://developers.facebook.com
 - The server should be running a reverse proxy that forwards the https traffic after SSL termination to `http://localhost:8080` assuming that the reverse proxy is running on the same host as hubot. If you started hubot specifying the `PORT` env var, this will override the default `8080` port.
 - Self signed certificates won't be accepted by facebook. Letsencrypt certificates works perfectly.
 - The `-n ""` flag when starting hubot, doesn't give the bot a name. So instead of sending `Hubot ping` to it, you'll just send `ping`.
+- The API supports only 320 chars responses. The adapter truncates the message and appends `...`.
 
 ## Contributions
 
