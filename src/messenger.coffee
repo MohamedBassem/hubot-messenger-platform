@@ -84,7 +84,7 @@ class Messenger extends Adapter
         senderId = event.sender.id
         if event.message and event.message.text
           text = event.message.text
-          user = new User senderId, room: senderId
+          user = new User senderId.toString(), room: senderId.toString()
           @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
           @robot.receive new TextMessage(user, text)
         i++
