@@ -1,4 +1,5 @@
 {Adapter,TextMessage,User} = require 'hubot'
+async = require 'async'
 
 FB_MESSAGING_ENDPOINT = "https://graph.facebook.com/v2.6/me/messages"
 
@@ -15,7 +16,7 @@ class Messenger extends Adapter
 
 
   _deliverMessages: (envelope, msgs) ->
-    async.eachSeries msgs, (msg, callback) ->
+    async.eachSeries msgs, (msg, callback) =>
       data = JSON.stringify({
         recipient : {
           id: envelope.user.id
