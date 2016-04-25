@@ -37,7 +37,7 @@ class Messenger extends Adapter
     else if @options.longMessageAction == "split"
       lines = msg.split("\n")
       i = 0
-      while i < 0
+      while i < lines.length
         if lines[i] > 320
           lines[i] = lines[i].substring(0,316) + "...\n"
         else
