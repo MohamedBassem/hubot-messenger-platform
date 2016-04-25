@@ -14,26 +14,28 @@ class Messenger extends Adapter
   reply: @prototype.send
 
 
-  _deliverMessage: (envelope, msg) ->
-    data = JSON.stringify({
-      recipient : {
-        id: envelope.user.id
-      },
-      message : {
-        text : msg
-      }
-    })
-    @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
-      .header('Content-Type', 'application/json')
-      .post(data) (err, res, body) =>
-        if err
-          @robot.logger.error "Failed to send response : " + err
-        else if res.statusCode != 200
-          @robot.logger.error "Failed to send response : " + body
+  _deliverMessages: (envelope, msgs) ->
+    async.eachSeries msgs, (msg, callback) ->
+      data = JSON.stringify({
+        recipient : {
+          id: envelope.user.id
+        },
+        message : {
+          text : msg
+        }
+      })
+      @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
+        .header('Content-Type', 'application/json')
+        .post(data) (err, res, body) =>
+          if err
+            @robot.logger.error "Failed to send response : " + err
+          else if res.statusCode != 200
+            @robot.logger.error "Failed to send response : " + body
+          callback()
 
   _prepareAndSendMessage: (envelope, msg) ->
     if @options.longMessageAction == "truncate"
-      @_deliverMessage(envelope, msg.substring(0,317) + "...")
+      @_deliverMessages(envelope, [msg.substring(0,317) + "..."])
     else if @options.longMessageAction == "split"
       lines = msg.split("\n")
       i = 0
@@ -44,17 +46,19 @@ class Messenger extends Adapter
           lines[i] += "\n"
         i++
       toDeliver = ""
+      chuncks = []
       i = 0
       while i < lines.length
         if toDeliver.length + lines[i].length <= 320
           toDeliver += lines[i]
           i++
         else
-          @_deliverMessage(envelope, toDeliver.trim())
+          chuncks.push(toDeliver.trim())
           toDeliver = ""
       if toDeliver.length > 0
-          @_deliverMessage(envelope, toDeliver.trim())
+          chuncks.push(toDeliver.trim())
           toDeliver = ""
+      @_deliverMessages(envelope, chuncks)
 
   run: ->
     @options =
