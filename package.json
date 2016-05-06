@@ -1,6 +1,6 @@
 {
   "name": "hubot-messenger-platform",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "A hubot adapter for the new messenger platform",
   "main": "./src/messenger.coffee",
   "scripts": {
@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/MohamedBassem/hubot-messenger-platform#readme",
   "dependencies": {
-    "async": "^1.5.2"
+    "async": "^1.5.2",
+    "mime": "^1.3.4"
   }
 }

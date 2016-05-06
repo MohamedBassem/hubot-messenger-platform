@@ -1,5 +1,6 @@
 {Adapter,TextMessage,User} = require 'hubot'
 async = require 'async'
+Mime = require 'mime'
 
 FB_MESSAGING_ENDPOINT = "https://graph.facebook.com/v2.6/me/messages"
 
@@ -17,14 +18,22 @@ class Messenger extends Adapter
 
   _deliverMessages: (envelope, msgs) ->
     async.eachSeries msgs, (msg, callback) =>
-      data = JSON.stringify({
+      data = {
         recipient : {
           id: envelope.user.id
         },
-        message : {
-          text : msg
-        }
-      })
+        message : {}
+      }
+
+# From : https://github.com/chen-ye/hubot-fb/blob/master/src/fb.coffee#L55
+      mime = Mime.lookup(msg)
+      if mime is "image/jpeg" or mime is "image/png" or mime is "image/gif"
+        data.message.attachment = { type: "image", payload: { url: msg }}
+      else
+        data.message.text = msg
+
+      data = JSON.stringify(data)
+
       @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
         .header('Content-Type', 'application/json')
         .post(data) (err, res, body) =>
@@ -42,7 +51,9 @@ class Messenger extends Adapter
       i = 0
       while i < lines.length
         if lines[i] > 320
-          lines[i] = lines[i].substring(0,316) + "...\n"
+          mime = Mime.lookup(lines[i])
+          unless mime is "image/jpeg" or mime is "image/png" or mime is "image/gif"
+            lines[i] = lines[i].substring(0,316) + "...\n"
         else
           lines[i] += "\n"
         i++
