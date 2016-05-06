@@ -1,3 +1,6 @@
+
+Not maintained anymore, better use : [https://github.com/chen-ye/hubot-fb](https://github.com/chen-ye/hubot-fb).
+
 # Hubot Messenger Platform Adapter
 
 Facebook has just announced its new [platform for messenger](https://developers.facebook.com/docs/messenger-platform). This is a hubot adapter for the new bot api.
