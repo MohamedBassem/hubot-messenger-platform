@@ -120,6 +120,7 @@ class Messenger extends Adapter
         res.send "Error, wrong validation token"
 
     @robot.router.post '/webhook', (req,res) =>
+      @robot.logger.error JSON.stringify(req.body)
       messaging_events = req.body.entry[0].messaging
       i = 0
       while i < messaging_events.length
