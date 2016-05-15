@@ -62,7 +62,6 @@ class Messenger extends Adapter
           @robot.logger.error "Failed to send response : " + err
         else if res.statusCode != 200
           @robot.logger.error "Failed to send response : " + body
-        callback()
 
   _prepareAndSendMessage: (envelope, msg) ->
     jsonMsg = null
