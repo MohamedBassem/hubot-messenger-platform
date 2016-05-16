@@ -43,8 +43,34 @@ class Messenger extends Adapter
             @robot.logger.error "Failed to send response : " + body
           callback()
 
+  _deliverJsonMessage: (envelope, msg) ->
+    data = {
+      recipient : {
+        id: envelope.user.id
+      },
+      message : {}
+    }
+    data.message.attachment = {
+      "type": "template",
+      "payload": msg
+    }
+    data = JSON.stringify(data)
+    @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
+      .header('Content-Type', 'application/json')
+      .post(data) (err, res, body) =>
+        if err
+          @robot.logger.error "Failed to send response : " + err
+        else if res.statusCode != 200
+          @robot.logger.error "Failed to send response : " + body
+
   _prepareAndSendMessage: (envelope, msg) ->
-    if @options.longMessageAction == "truncate"
+    jsonMsg = null
+    try
+      jsonMsg = JSON.parse(msg)
+    catch error
+    if jsonMsg
+      @_deliverJsonMessage(envelope, jsonMsg)
+    else if @options.longMessageAction == "truncate"
       @_deliverMessages(envelope, [msg.substring(0,317) + "..."])
     else if @options.longMessageAction == "split"
       lines = msg.split("\n")
@@ -100,6 +126,11 @@ class Messenger extends Adapter
         senderId = event.sender.id
         if event.message and event.message.text
           text = event.message.text
+          user = new User senderId.toString(), room: senderId.toString()
+          @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
+          @robot.receive new TextMessage(user, text)
+        if event.postback and event.postback.payload
+          text = event.postback.payload
           user = new User senderId.toString(), room: senderId.toString()
           @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
           @robot.receive new TextMessage(user, text)
