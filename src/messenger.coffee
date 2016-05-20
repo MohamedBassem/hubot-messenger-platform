@@ -139,7 +139,7 @@ class Messenger extends Adapter
         senderId = event.sender.id
         if event.message
           @robot.logger.error JSON.stringify(event.message)
-          if event.attachments and event.attachments.length > 0
+          if event.message.attachments and event.message.attachments.length > 0
             attachment = event.attachment[0]
             @robot.logger.error JSON.stringify(attachment)
             text = @_extractLocationFromAttachment(attachment)
