@@ -140,7 +140,9 @@ class Messenger extends Adapter
         if event.message
           @robot.logger.error JSON.stringify(event.message)
           if event.attachments and event.attachments.length > 0
-            text = @_extractLocationFromAttachment(event.attachment[0])
+            attachment = event.attachment[0]
+            @robot.logger.error JSON.stringify(attachment)
+            text = @_extractLocationFromAttachment(attachment)
             if text
               user = new User senderId.toString(), room: senderId.toString()
               @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
