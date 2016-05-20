@@ -103,9 +103,11 @@ class Messenger extends Adapter
     if attachment.type == "location"
       locationObj = {source: "facebook", lat: attachment.payload.coordinates.lat, long: attachment.payload.coordinates.long}
     else if attachment.title == 'Google Maps'
-      url = attachment.url
-      locationParts = url.split("?u=")[1].split("q%3D")[1].split("%26")[0].split("%252C")
-      locationObj = {source: "google", lat: locationParts[0], long: locationParts[1]}
+      try
+        url = attachment.url
+        locationParts = url.split("?u=")[1].split("q%3D")[1].split("%26")[0].split("%252C")
+        locationObj = {source: "google", lat: locationParts[0], long: locationParts[1]}
+      catch error
     if locationObj
       return "Sharing Location: #{JSON.stringify(locationObj)}"
     else
