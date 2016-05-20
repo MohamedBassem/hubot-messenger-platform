@@ -98,6 +98,19 @@ class Messenger extends Adapter
           toDeliver = ""
       @_deliverMessages(envelope, chuncks)
 
+  _extractLocationFromAttachment: attachment ->
+    locationObj = null
+    if attachment.type == "location"
+      locationObj = {source: "facebook", lat: attachment.payload.coordinates.lat, long: attachment.payload.coordinates.long}
+    else if attachment.title == 'Google Maps'
+      url = attachment.url
+      locationParts = url.split("?u=")[1].split("q%3D")[1].split("%26")[0].split("%252C")
+      locationObj = {source: "google", lat: locationParts[0], long: locationParts[1]}
+    if locationObj
+      return "Sharing Location: #{JSON.stringify(locationObj)}"
+    else
+      return null
+
   run: ->
     @options =
       verificationToken : process.env.HUBOT_MESSENGER_VERIFICATION_TOKEN
@@ -120,16 +133,23 @@ class Messenger extends Adapter
 
     @robot.router.post '/webhook', (req,res) =>
       messaging_events = req.body.entry[0].messaging
-      @robot.logger.error JSON.stringify(req.body)
       i = 0
       while i < messaging_events.length
         event = req.body.entry[0].messaging[i]
         senderId = event.sender.id
-        if event.message and event.message.text
-          text = event.message.text
-          user = new User senderId.toString(), room: senderId.toString()
-          @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
-          @robot.receive new TextMessage(user, text)
+        if event.message
+          if event.attachments and event.attachments.length > 0
+            attachment = event.attachment[0]
+            text = @_extractLocationFromAttachment(attachment)
+            if text
+              user = new User senderId.toString(), room: senderId.toString()
+              @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
+              @robot.receive new TextMessage(user, text)
+          else if event.message.text
+            text = event.message.text
+            user = new User senderId.toString(), room: senderId.toString()
+            @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
+            @robot.receive new TextMessage(user, text)
         if event.postback and event.postback.payload
           text = event.postback.payload
           user = new User senderId.toString(), room: senderId.toString()
