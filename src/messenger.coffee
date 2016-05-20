@@ -50,10 +50,13 @@ class Messenger extends Adapter
       },
       message : {}
     }
-    data.message.attachment = {
-      "type": "template",
-      "payload": msg
-    }
+    if msg.message
+      data.message == msg.message
+    else
+      data.message.attachment = {
+        "type": "template",
+        "payload": msg
+      }
     data = JSON.stringify(data)
     @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
       .header('Content-Type', 'application/json')
