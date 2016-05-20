@@ -98,7 +98,7 @@ class Messenger extends Adapter
           toDeliver = ""
       @_deliverMessages(envelope, chuncks)
 
-  _extractLocationFromAttachment: attachment ->
+  _extractLocationFromAttachment: (attachment) ->
     locationObj = null
     if attachment.type == "location"
       locationObj = {source: "facebook", lat: attachment.payload.coordinates.lat, long: attachment.payload.coordinates.long}
@@ -139,8 +139,7 @@ class Messenger extends Adapter
         senderId = event.sender.id
         if event.message
           if event.attachments and event.attachments.length > 0
-            attachment = event.attachment[0]
-            text = @_extractLocationFromAttachment(attachment)
+            text = @_extractLocationFromAttachment(event.attachment[0])
             if text
               user = new User senderId.toString(), room: senderId.toString()
               @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
