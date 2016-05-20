@@ -120,7 +120,7 @@ class Messenger extends Adapter
 
     @robot.router.post '/webhook', (req,res) =>
       messaging_events = req.body.entry[0].messaging
-      @robot.logger.error req.body
+      @robot.logger.error JSON.stringify(req.body)
       i = 0
       while i < messaging_events.length
         event = req.body.entry[0].messaging[i]
