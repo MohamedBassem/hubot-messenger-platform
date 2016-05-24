@@ -43,28 +43,30 @@ class Messenger extends Adapter
             @robot.logger.error "Failed to send response : " + body
           callback()
 
-  _deliverJsonMessage: (envelope, msg) ->
-    data = {
-      recipient : {
-        id: envelope.user.id
-      },
-      message : {}
-    }
-    if msg.message
-      data.message == msg.message
-    else
-      data.message.attachment = {
-        "type": "template",
-        "payload": msg
+  _deliverJsonMessages: (envelope, msgs) ->
+    async.eachSeries msgs, (msg, callback) =>
+      data = {
+        recipient : {
+          id: envelope.user.id
+        },
+        message : {}
       }
-    data = JSON.stringify(data)
-    @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
-      .header('Content-Type', 'application/json')
-      .post(data) (err, res, body) =>
-        if err
-          @robot.logger.error "Failed to send response : " + err
-        else if res.statusCode != 200
-          @robot.logger.error "Failed to send response : " + body
+      if msg.message
+        data.message == msg.message
+      else
+        data.message.attachment = {
+          "type": "template",
+          "payload": msg
+        }
+      data = JSON.stringify(data)
+      @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
+        .header('Content-Type', 'application/json')
+        .post(data) (err, res, body) =>
+          if err
+            @robot.logger.error "Failed to send response : " + err
+          else if res.statusCode != 200
+            @robot.logger.error "Failed to send response : " + body
+          callback()
 
   _prepareAndSendMessage: (envelope, msg) ->
     jsonMsg = null
@@ -72,7 +74,10 @@ class Messenger extends Adapter
       jsonMsg = JSON.parse(msg)
     catch error
     if jsonMsg
-      @_deliverJsonMessage(envelope, jsonMsg)
+      if jsonMsg.length
+        @_deliverJsonMessages(envelope, jsonMsg)
+      else
+        @_deliverJsonMessages(envelope, [jsonMsg])
     else if @options.longMessageAction == "truncate"
       @_deliverMessages(envelope, [msg.substring(0,317) + "..."])
     else if @options.longMessageAction == "split"
