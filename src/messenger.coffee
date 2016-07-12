@@ -10,8 +10,20 @@ class Messenger extends Adapter
     super @robot
 
   send: (envelope, messages...) ->
+    @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
+      .header('Content-Type', 'application/json')
+      .post({ recipient : { id: envelope.user.id }, sender_action : 'mark_seen' }) (err, res, body) =>
+        @robot.logger.info "sent read receipt"
+    @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
+      .header('Content-Type', 'application/json')
+      .post({ recipient : { id: envelope.user.id }, sender_action : 'typing_on' }) (err, res, body) =>
+        @robot.logger.info "sent typing indicator"
     for msg in messages
       @_prepareAndSendMessage(envelope, msg)
+    @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
+      .header('Content-Type', 'application/json')
+      .post({ recipient : { id: envelope.user.id }, sender_action : 'typing_off' }) (err, res, body) =>
+        @robot.logger.info "sent typing off"
 
   reply: @prototype.send
 
