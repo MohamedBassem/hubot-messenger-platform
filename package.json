@@ -1,6 +1,6 @@
 {
   "name": "hubot-messenger-platform",
-  "version": "0.0.12",
+  "version": "0.0.20",
   "description": "A hubot adapter for the new messenger platform",
   "main": "./src/messenger.coffee",
   "scripts": {

@@ -10,8 +10,16 @@ class Messenger extends Adapter
     super @robot
 
   send: (envelope, messages...) ->
+    #@robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
+    #  .header('Content-Type', 'application/json')
+    #  .post({ recipient : { id: envelope.user.id }, sender_action : 'mark_seen' }) (err, res, body) =>
+    #    @robot.logger.info "sent read receipt"
     for msg in messages
       @_prepareAndSendMessage(envelope, msg)
+    #@robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
+    #  .header('Content-Type', 'application/json')
+    #  .post({ recipient : { id: envelope.user.id }, sender_action : 'typing_off' }) (err, res, body) =>
+    #    @robot.logger.info "sent typing off"
 
   reply: @prototype.send
 
@@ -43,25 +51,30 @@ class Messenger extends Adapter
             @robot.logger.error "Failed to send response : " + body
           callback()
 
-  _deliverJsonMessage: (envelope, msg) ->
-    data = {
-      recipient : {
-        id: envelope.user.id
-      },
-      message : {}
-    }
-    data.message.attachment = {
-      "type": "template",
-      "payload": msg
-    }
-    data = JSON.stringify(data)
-    @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
-      .header('Content-Type', 'application/json')
-      .post(data) (err, res, body) =>
-        if err
-          @robot.logger.error "Failed to send response : " + err
-        else if res.statusCode != 200
-          @robot.logger.error "Failed to send response : " + body
+  _deliverJsonMessages: (envelope, msgs) ->
+    async.eachSeries msgs, (msg, callback) =>
+      data = {
+        recipient : {
+          id: envelope.user.id
+        },
+        message : {}
+      }
+      if msg.message
+        data.message == msg.message
+      else
+        data.message.attachment = {
+          "type": "template",
+          "payload": msg
+        }
+      data = JSON.stringify(data)
+      @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
+        .header('Content-Type', 'application/json')
+        .post(data) (err, res, body) =>
+          if err
+            @robot.logger.error "Failed to send response : " + err
+          else if res.statusCode != 200
+            @robot.logger.error "Failed to send response : " + body
+          callback()
 
   _prepareAndSendMessage: (envelope, msg) ->
     jsonMsg = null
@@ -69,7 +82,10 @@ class Messenger extends Adapter
       jsonMsg = JSON.parse(msg)
     catch error
     if jsonMsg
-      @_deliverJsonMessage(envelope, jsonMsg)
+      if jsonMsg.length
+        @_deliverJsonMessages(envelope, jsonMsg)
+      else
+        @_deliverJsonMessages(envelope, [jsonMsg])
     else if @options.longMessageAction == "truncate"
       @_deliverMessages(envelope, [msg.substring(0,317) + "..."])
     else if @options.longMessageAction == "split"
@@ -98,6 +114,21 @@ class Messenger extends Adapter
           toDeliver = ""
       @_deliverMessages(envelope, chuncks)
 
+  _extractLocationFromAttachment: (attachment) ->
+    locationObj = null
+    if attachment.type == "location"
+      locationObj = {source: "facebook", lat: attachment.payload.coordinates.lat, long: attachment.payload.coordinates.long}
+    else if attachment.title == 'Google Maps'
+      try
+        url = attachment.url
+        locationParts = url.split("?u=")[1].split("q%3D")[1].split("%26")[0].split("%252C")
+        locationObj = {source: "google", lat: locationParts[0], long: locationParts[1]}
+      catch error
+    if locationObj
+      return "Sharing Location: #{JSON.stringify(locationObj)}"
+    else
+      return null
+
   run: ->
     @options =
       verificationToken : process.env.HUBOT_MESSENGER_VERIFICATION_TOKEN
@@ -124,16 +155,33 @@ class Messenger extends Adapter
       while i < messaging_events.length
         event = req.body.entry[0].messaging[i]
         senderId = event.sender.id
-        if event.message and event.message.text
-          text = event.message.text
-          user = new User senderId.toString(), room: senderId.toString()
-          @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
-          @robot.receive new TextMessage(user, text)
+        @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
+          .header('Content-Type', 'application/json')
+          .post({ recipient : { id: senderId.toString() }, sender_action : 'typing_on' }) (err, res, body) =>
+            @robot.logger.info "sent typing indicator"
+        if event.message
+          if event.message.attachments and event.message.attachments.length > 0
+            attachment =  event.message.attachments[0]
+            text = @_extractLocationFromAttachment(attachment)
+            if text
+              user = new User senderId.toString(), room: senderId.toString()
+              @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
+              @robot.receive new TextMessage(user, text)
+          else if event.message.text
+            text = event.message.text
+            user = new User senderId.toString(), room: senderId.toString()
+            @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
+            @robot.receive new TextMessage(user, text)
         if event.postback and event.postback.payload
           text = event.postback.payload
           user = new User senderId.toString(), room: senderId.toString()
           @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
           @robot.receive new TextMessage(user, text)
+        if event.account_linking && event.account_linking.status == 'linked'
+          user = new User senderId.toString(), room: senderId.toString()
+          @robot.logger.info "account linking action"
+          @robot.receive new TextMessage(user, "ACCOUNT_LINKING #{event.account_linking.authorization_code}")
+
         i++
       res.send 'OK'
 
