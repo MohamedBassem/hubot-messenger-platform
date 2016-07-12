@@ -18,8 +18,8 @@ class Messenger extends Adapter
       .header('Content-Type', 'application/json')
       .post({ recipient : { id: envelope.user.id }, sender_action : 'typing_on' }) (err, res, body) =>
         @robot.logger.info "sent typing indicator"
-        @robot.logger.error JSON.stringify(err)
-        @robot.logger.info JSON.stringify(res)
+        @robot.logger.error err
+        @robot.logger.info res
     for msg in messages
       @_prepareAndSendMessage(envelope, msg)
     #@robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
