@@ -14,12 +14,6 @@ class Messenger extends Adapter
     #  .header('Content-Type', 'application/json')
     #  .post({ recipient : { id: envelope.user.id }, sender_action : 'mark_seen' }) (err, res, body) =>
     #    @robot.logger.info "sent read receipt"
-    @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
-      .header('Content-Type', 'application/json')
-      .post({ recipient : { id: envelope.user.id }, sender_action : 'typing_on' }) (err, res, body) =>
-        @robot.logger.info "sent typing indicator"
-        @robot.logger.error err
-        @robot.logger.info res
     for msg in messages
       @_prepareAndSendMessage(envelope, msg)
     #@robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
@@ -156,6 +150,10 @@ class Messenger extends Adapter
         res.send "Error, wrong validation token"
 
     @robot.router.post '/webhook', (req,res) =>
+      @robot.http(FB_MESSAGING_ENDPOINT + "?access_token=" + @options.pageAccessToken)
+        .header('Content-Type', 'application/json')
+        .post({ recipient : { id: envelope.user.id }, sender_action : 'typing_on' }) (err, res, body) =>
+          @robot.logger.info "sent typing indicator"
       messaging_events = req.body.entry[0].messaging
       i = 0
       while i < messaging_events.length
