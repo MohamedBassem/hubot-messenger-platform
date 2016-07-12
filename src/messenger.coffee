@@ -177,6 +177,11 @@ class Messenger extends Adapter
           user = new User senderId.toString(), room: senderId.toString()
           @robot.logger.info "Received message: '#{text}' from '#{senderId}'"
           @robot.receive new TextMessage(user, text)
+        if event.account_linking && event.account_linking.status == 'linked'
+          user = new User senderId.toString(), room: senderId.toString()
+          @robot.logger.info "account linking action"
+          @robot.receive new TextMessage(user, "ACCOUNT_LINKING #{event.account_linking.authorization_code}")
+
         i++
       res.send 'OK'
 
